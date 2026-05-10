@@ -1,0 +1,449 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>상담 현실 반응</title>
+
+<style>
+
+body{
+  margin:0;
+  padding:0;
+  background:#111;
+  color:#fff;
+  font-family:'Pretendard',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+.wrap{
+  width:92%;
+  max-width:520px;
+  padding:10px 20px 30px;
+  box-sizing:border-box;
+  transform:translateY(-40px);
+}
+
+.title{
+  font-size:28px;
+  font-weight:700;
+  line-height:1.6;
+  text-align:center;
+  margin-bottom:38px;
+}
+
+.option{
+  width:100%;
+  background:#1d1d1d;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:14px;
+  font-size:17px;
+  color:#fff;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.option:hover{
+  background:#292929;
+}
+
+.result{
+  display:none;
+  text-align:center;
+}
+
+.label{
+  font-size:16px;
+  color:#888;
+  margin-bottom:8px;
+  letter-spacing:-0.3px;
+}
+
+.percent{
+  font-size:74px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.barWrap{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:20px 0 28px;
+}
+
+.square{
+  width:18px;
+  height:18px;
+  border-radius:4px;
+  opacity:0.18;
+  transition:0.3s;
+}
+
+.red{
+  background:#ff8c8c;
+}
+
+.yellow{
+  background:#ffe08a;
+}
+
+.green{
+  background:#8ee6a3;
+}
+
+.on{
+  opacity:1;
+}
+
+.resultText{
+  font-size:20px;
+  line-height:1.7;
+  color:#ddd;
+  white-space:pre-line;
+}
+
+.bottom{
+  margin-top:42px;
+  font-size:14px;
+  color:#777;
+  line-height:1.7;
+}
+
+.limitBox{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:#111;
+  color:#fff;
+  text-align:center;
+  padding:30px;
+  font-size:20px;
+  line-height:1.8;
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<div id="questionBox">
+
+<div class="title" id="question"></div>
+
+<div id="options"></div>
+
+</div>
+
+<div class="result" id="resultBox">
+
+<div class="label">
+당신의 선택은
+</div>
+
+<div class="percent" id="percent"></div>
+
+<div class="barWrap" id="barWrap"></div>
+
+<div class="resultText" id="resultText"></div>
+
+<div class="bottom">
+상담사 반응은 프로필에서
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const LIMIT_HOURS = 10;
+
+const savedTime = localStorage.getItem("counsel_limit");
+
+if(savedTime){
+
+  const now = Date.now();
+
+  const diff = now - Number(savedTime);
+
+  const limit = LIMIT_HOURS * 60 * 60 * 1000;
+
+  if(diff < limit){
+
+    document.body.innerHTML = `
+    <div class="limitBox">
+      오늘 반응은 이미 확인했습니다<br>
+      상담 흐름은<br>
+      10시간 후 다시 확인 가능합니다
+    </div>
+    `;
+
+    throw new Error("LIMIT");
+  }
+
+}
+
+const questions = [
+
+{
+q:"상담 시작 전에 가장 오래 걸리는 건?",
+a:[
+"상황 설명 정리",
+"감정 상태 파악",
+"질문 방향 잡기",
+"신뢰 만들기"
+]
+},
+
+{
+q:"상담 초반 가장 어려운 유형은?",
+a:[
+"말을 아끼는 사람",
+"감정이 격한 사람",
+"계속 떠보는 사람",
+"확답만 원하는 사람"
+]
+},
+
+{
+q:"상담 흐름이 가장 자주 끊기는 순간은?",
+a:[
+"주제가 자꾸 바뀔 때",
+"감정이 갑자기 커질 때",
+"질문이 반복될 때",
+"답을 믿지 않을 때"
+]
+},
+
+{
+q:"상담 전에 가장 먼저 알고 싶은 건?",
+a:[
+"현재 감정 상태",
+"인간관계 문제",
+"금전 스트레스",
+"연애 흐름"
+]
+},
+
+{
+q:"상담하면서 가장 피곤한 순간은?",
+a:[
+"같은 질문 반복",
+"긴 설명 이어짐",
+"답을 의심함",
+"반응이 없을 때"
+]
+},
+
+{
+q:"내담자가 가장 많이 숨기는 건?",
+a:[
+"진짜 감정",
+"금전 문제",
+"인간관계 문제",
+"이미 들은 상담 결과"
+]
+},
+
+{
+q:"상담 초반 분위기를 좌우하는 건?",
+a:[
+"첫 질문",
+"말투",
+"반응 속도",
+"공감 표현"
+]
+},
+
+{
+q:"상담이 길어지는 가장 큰 이유는?",
+a:[
+"감정 정리가 안 됨",
+"질문이 많음",
+"결정을 못 함",
+"같은 이야기 반복"
+]
+},
+
+{
+q:"상담 전에 체크하면 좋은 건?",
+a:[
+"최근 스트레스",
+"현재 관계 상태",
+"가장 큰 고민",
+"원하는 방향"
+]
+},
+
+{
+q:"상담 흐름이 좋아지는 순간은?",
+a:[
+"감정을 털어놓을 때",
+"핵심 고민이 나올 때",
+"신뢰가 생길 때",
+"표정이 풀릴 때"
+]
+},
+
+{
+q:"상담사가 가장 긴장하는 순간은?",
+a:[
+"첫마디 전",
+"반응이 없을 때",
+"갑자기 울 때",
+"상담 끝나갈 때"
+]
+},
+
+{
+q:"다시 연락 오는 내담자의 특징은?",
+a:[
+"감정 기복이 큼",
+"고민이 오래감",
+"확신이 부족함",
+"공감이 필요함"
+]
+}
+
+];
+
+const messages = {
+low:[
+"생각보다 이 선택은 많지 않았습니다\n일부 상담사들만 공감하는 흐름으로 보입니다",
+"상대적으로 적은 선택이 나왔습니다\n현업에서도 의견이 갈리는 편입니다",
+"많이 선택된 흐름은 아닙니다\n상황에 따라 체감 차이가 큰 반응입니다"
+],
+
+midLow:[
+"적지 않은 상담사들이\n비슷한 흐름을 경험하고 있습니다",
+"현업에서 은근 자주 나오는 반응입니다\n생각보다 공감하는 경우가 있습니다",
+"상담 흐름에서 꾸준히 언급되는 반응 중 하나입니다\n비슷한 경험을 하는 경우가 적지 않습니다"
+],
+
+midHigh:[
+"많은 상담사들이\n이 부분에서 흐름이 흔들린다고 느끼고 있습니다",
+"상담 초반 자주 공감되는 반응으로 보입니다\n현업 경험과 연결되는 경우가 많습니다",
+"상담 과정에서 자주 언급되는 흐름입니다\n상당수 상담사들이 비슷하게 느끼고 있습니다"
+],
+
+high:[
+"상담사들이 가장 많이 공감한 흐름입니다\n현업 반응이 크게 모이고 있습니다",
+"매우 높은 선택 비율이 나온 반응입니다\n실제 상담 흐름과 연결되는 경우가 많습니다",
+"가장 강하게 공감받고 있는 반응입니다\n상담 경험이 쌓일수록 자주 언급되는 흐름입니다"
+]
+};
+
+const percentPool = [
+12,17,19,23,27,
+31,34,38,42,46,
+51,54,58,63,67,
+71,74,78,82,87
+];
+
+function random(arr){
+return arr[Math.floor(Math.random()*arr.length)];
+}
+
+const randomQuestion =
+questions[Math.floor(Math.random()*questions.length)];
+
+document.getElementById("question").innerText =
+randomQuestion.q;
+
+const optionsDiv = document.getElementById("options");
+
+randomQuestion.a.forEach(option=>{
+
+const btn=document.createElement("button");
+
+btn.className="option";
+
+btn.innerText=option;
+
+btn.onclick=()=>showResult();
+
+optionsDiv.appendChild(btn);
+
+});
+
+function showResult(){
+
+localStorage.setItem(
+  "counsel_limit",
+  Date.now()
+);
+
+document.getElementById("questionBox").style.display="none";
+
+document.getElementById("resultBox").style.display="block";
+
+const percent =
+percentPool[Math.floor(Math.random()*percentPool.length)];
+
+document.getElementById("percent").innerText =
+percent+"%";
+
+const barWrap = document.getElementById("barWrap");
+
+barWrap.innerHTML = "";
+
+const activeCount = Math.ceil(percent / 10);
+
+for(let i=0;i<10;i++){
+
+  const square = document.createElement("div");
+
+  square.classList.add("square");
+
+  if(i < 3){
+    square.classList.add("red");
+  }
+  else if(i < 6){
+    square.classList.add("yellow");
+  }
+  else{
+    square.classList.add("green");
+  }
+
+  if(i < activeCount){
+    square.classList.add("on");
+  }
+
+  barWrap.appendChild(square);
+
+}
+
+let text="";
+
+if(percent<=25){
+text=random(messages.low);
+}
+else if(percent<=50){
+text=random(messages.midLow);
+}
+else if(percent<=75){
+text=random(messages.midHigh);
+}
+else{
+text=random(messages.high);
+}
+
+document.getElementById("resultText").innerText=text;
+
+}
+
+</script>
+
+</body>
+</html>
+```
