@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>상담사 흐름 체크</title>
+
+<style>
+body{
+  margin:0;
+  padding:0;
+  background:#111;
+  color:#fff;
+  font-family:'Pretendard',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+.wrap{
+  width:92%;
+  max-width:520px;
+  padding:30px 20px;
+  box-sizing:border-box;
+}
+
+.title{
+  font-size:26px;
+  font-weight:700;
+  line-height:1.5;
+  margin-bottom:35px;
+  text-align:center;
+}
+
+.option{
+  width:100%;
+  background:#1d1d1d;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:14px;
+  font-size:17px;
+  color:#fff;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.option:hover{
+  background:#292929;
+}
+
+.result{
+  display:none;
+  text-align:center;
+}
+
+.percent{
+  font-size:72px;
+  font-weight:800;
+  margin-bottom:25px;
+}
+
+.resultText{
+  font-size:20px;
+  line-height:1.7;
+  color:#ddd;
+  white-space:pre-line;
+}
+
+.bottom{
+  margin-top:45px;
+  font-size:14px;
+  color:#777;
+  line-height:1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<div id="questionBox">
+
+<div class="title" id="question"></div>
+
+<div id="options"></div>
+
+</div>
+
+<div class="result" id="resultBox">
+
+<div class="percent" id="percent"></div>
+
+<div class="resultText" id="resultText"></div>
+
+<div class="bottom">
+오늘 반응 저장 완료<br>
+내일 다시 확인 가능합니다
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+{
+q:"상담 시작 전에 가장 오래 걸리는 건?",
+a:[
+"상황 설명 정리",
+"감정 상태 파악",
+"질문 방향 잡기",
+"신뢰 만들기"
+]
+},
+
+{
+q:"상담 초반 가장 어려운 유형은?",
+a:[
+"말을 아끼는 사람",
+"감정이 격한 사람",
+"계속 떠보는 사람",
+"확답만 원하는 사람"
+]
+},
+
+{
+q:"상담 흐름이 가장 자주 끊기는 순간은?",
+a:[
+"주제가 자꾸 바뀔 때",
+"감정이 갑자기 커질 때",
+"질문이 반복될 때",
+"답을 믿지 않을 때"
+]
+},
+
+{
+q:"상담 전에 가장 먼저 알고 싶은 건?",
+a:[
+"현재 감정 상태",
+"인간관계 문제",
+"금전 스트레스",
+"연애 흐름"
+]
+},
+
+{
+q:"상담하면서 가장 피곤한 순간은?",
+a:[
+"같은 질문 반복",
+"긴 설명 이어짐",
+"답을 의심함",
+"반응이 없을 때"
+]
+},
+
+{
+q:"내담자가 가장 많이 숨기는 건?",
+a:[
+"진짜 감정",
+"금전 문제",
+"인간관계 문제",
+"이미 들은 상담 결과"
+]
+},
+
+{
+q:"상담 초반 분위기를 좌우하는 건?",
+a:[
+"첫 질문",
+"말투",
+"반응 속도",
+"공감 표현"
+]
+},
+
+{
+q:"상담이 길어지는 가장 큰 이유는?",
+a:[
+"감정 정리가 안 됨",
+"질문이 많음",
+"결정을 못 함",
+"같은 이야기 반복"
+]
+},
+
+{
+q:"상담 전에 체크하면 좋은 건?",
+a:[
+"최근 스트레스",
+"현재 관계 상태",
+"가장 큰 고민",
+"원하는 방향"
+]
+},
+
+{
+q:"상담 흐름이 좋아지는 순간은?",
+a:[
+"감정을 털어놓을 때",
+"핵심 고민이 나올 때",
+"신뢰가 생길 때",
+"표정이 풀릴 때"
+]
+},
+
+{
+q:"상담사가 가장 긴장하는 순간은?",
+a:[
+"첫마디 전",
+"반응이 없을 때",
+"갑자기 울 때",
+"상담 끝나갈 때"
+]
+},
+
+{
+q:"다시 연락 오는 내담자의 특징은?",
+a:[
+"감정 기복이 큼",
+"고민이 오래감",
+"확신이 부족함",
+"공감이 필요함"
+]
+},
+
+{
+q:"상담 초반 가장 많이 듣는 말은?",
+a:[
+"너무 답답해요",
+"어떻게 해야 할까요",
+"왜 이런 걸까요",
+"저만 이런가요"
+]
+},
+
+{
+q:"상담하면서 가장 신경 쓰는 건?",
+a:[
+"말투",
+"흐름 유지",
+"감정 반응",
+"시간 조절"
+]
+},
+
+{
+q:"상담이 잘 풀리는 내담자의 특징은?",
+a:[
+"솔직하게 말함",
+"질문에 집중함",
+"감정을 표현함",
+"흐름을 따라감"
+]
+},
+
+{
+q:"상담 중 가장 많이 막히는 부분은?",
+a:[
+"감정 설명",
+"관계 이야기",
+"미래 결정",
+"현실 문제"
+]
+},
+
+{
+q:"상담사가 가장 조심하는 건?",
+a:[
+"단정적인 표현",
+"감정 자극",
+"지나친 공감",
+"빠른 판단"
+]
+},
+
+{
+q:"상담 후 가장 많이 남는 감정은?",
+a:[
+"피로감",
+"걱정",
+"멍함",
+"안도감"
+]
+},
+
+{
+q:"상담 흐름이 꼬이기 시작하는 순간은?",
+a:[
+"답을 부정할 때",
+"질문이 늘어날 때",
+"감정이 흔들릴 때",
+"주제가 바뀔 때"
+]
+},
+
+{
+q:"상담 전에 미리 받고 싶은 건?",
+a:[
+"현재 상태",
+"최근 사건",
+"고민 우선순위",
+"원하는 결과"
+]
+},
+
+{
+q:"내담자가 가장 불안해하는 건?",
+a:[
+"관계 변화",
+"미래 흐름",
+"상대 마음",
+"금전 문제"
+]
+},
+
+{
+q:"상담사가 가장 많이 듣는 질문은?",
+a:[
+"연락 올까요",
+"잘 될까요",
+"끊어야 할까요",
+"기다려야 할까요"
+]
+},
+
+{
+q:"상담 만족도가 높아지는 순간은?",
+a:[
+"공감받았을 때",
+"방향이 잡혔을 때",
+"마음이 편해질 때",
+"현실 정리가 될 때"
+]
+},
+
+{
+q:"상담 중 가장 체력 소모 큰 유형은?",
+a:[
+"감정 폭발형",
+"의심 많은 유형",
+"반복 질문형",
+"결정 못 하는 유형"
+]
+},
+
+{
+q:"상담 흐름이 안정되는 순간은?",
+a:[
+"핵심 고민 확인",
+"감정 정리 시작",
+"대화 리듬 형성",
+"표정 변화"
+]
+},
+
+{
+q:"상담 전에 가장 궁금한 건?",
+a:[
+"지금 상태",
+"가장 큰 걱정",
+"최근 변화",
+"감정 방향"
+]
+},
+
+{
+q:"상담사가 가장 중요하게 보는 건?",
+a:[
+"현재 감정",
+"반복 패턴",
+"관계 흐름",
+"선택 방향"
+]
+},
+
+{
+q:"상담이 끝난 뒤 가장 신경 쓰이는 건?",
+a:[
+"상대 반응",
+"상담 만족도",
+"감정 여운",
+"다시 연락 여부"
+]
+},
+
+{
+q:"상담 중 가장 자주 나오는 감정은?",
+a:[
+"불안",
+"후회",
+"집착",
+"외로움"
+]
+},
+
+{
+q:"상담 흐름을 가장 빨리 망치는 건?",
+a:[
+"성급한 판단",
+"반복 질문",
+"감정 충돌",
+"주제 이탈"
+]
+}
+
+];
+
+const messages = {
+low:[
+"생각보다 이 선택은 많지 않았습니다\n일부 상담사들만 공감하는 흐름으로 보입니다",
+"상대적으로 적은 선택이 나왔습니다\n현업에서도 의견이 갈리는 편입니다",
+"많이 선택된 흐름은 아닙니다\n상황에 따라 체감 차이가 큰 반응입니다"
+],
+
+midLow:[
+"적지 않은 상담사들이\n비슷한 흐름을 경험하고 있습니다",
+"현업에서 은근 자주 나오는 반응입니다\n생각보다 공감하는 경우가 있습니다",
+"상담 흐름에서 꾸준히 언급되는 반응 중 하나입니다\n비슷한 경험을 하는 경우가 적지 않습니다"
+],
+
+midHigh:[
+"많은 상담사들이\n이 부분에서 흐름이 흔들린다고 느끼고 있습니다",
+"상담 초반 자주 공감되는 반응으로 보입니다\n현업 경험과 연결되는 경우가 많습니다",
+"상담 과정에서 자주 언급되는 흐름입니다\n상당수 상담사들이 비슷하게 느끼고 있습니다"
+],
+
+high:[
+"상담사들이 가장 많이 공감한 흐름입니다\n현업 반응이 크게 모이고 있습니다",
+"매우 높은 선택 비율이 나온 반응입니다\n실제 상담 흐름과 연결되는 경우가 많습니다",
+"가장 강하게 공감받고 있는 반응입니다\n상담 경험이 쌓일수록 자주 언급되는 흐름입니다"
+]
+};
+
+const randomQuestion =
+questions[Math.floor(Math.random()*questions.length)];
+
+document.getElementById("question").innerText =
+randomQuestion.q;
+
+const optionsDiv = document.getElementById("options");
+
+randomQuestion.a.forEach(option=>{
+
+const btn=document.createElement("button");
+
+btn.className="option";
+
+btn.innerText=option;
+
+btn.onclick=()=>showResult();
+
+optionsDiv.appendChild(btn);
+
+});
+
+function random(arr){
+return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function showResult(){
+
+document.getElementById("questionBox").style.display="none";
+
+document.getElementById("resultBox").style.display="block";
+
+const percent=Math.floor(Math.random()*81)+10;
+
+document.getElementById("percent").innerText =
+percent+"%";
+
+let text="";
+
+if(percent<=25){
+text=random(messages.low);
+}
+else if(percent<=50){
+text=random(messages.midLow);
+}
+else if(percent<=75){
+text=random(messages.midHigh);
+}
+else{
+text=random(messages.high);
+}
+
+document.getElementById("resultText").innerText=text;
+
+}
+
+</script>
+
+</body>
+</html>
